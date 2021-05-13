@@ -1,5 +1,5 @@
 # Differential backup
-This script allows to backup files by "differential backup" mode (Only files that have a different hash and path will be back up in a new "snapshot")
+This script allows to back up files by "differential backup" mode (Only files that have a different hash and path will be backed up in a new "snapshot")
 
 ## How it works
 The script will create an index database to trace which files have been already backed up and when performing a backup will create a new directory based on the current day and will copy only the new or changed files
@@ -63,9 +63,12 @@ test
 ## How to use
 ### Init
 Create a new backup repository
-(soon videos)
+![Init](assets/init.gif)
 ### Backup
-Perform backup
-(soon videos)
+Performing backup
+![Init](assets/backup.gif)
 ### Restore
 Not implemented yet
+
+#### Support the project
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/donate?hosted_button_id=8EWYXPED4ZU5E)
