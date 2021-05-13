@@ -6,18 +6,18 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func OpenDB(path string) (*sql.DB,error) {
-	database,err := sql.Open("sqlite3",path)
-	return database,err
+func OpenDB(path string) (*sql.DB, error) {
+	database, err := sql.Open("sqlite3", path)
+	return database, err
 }
 
-func CloseDB(database sql.DB)  {
+func CloseDB(database sql.DB) {
 	database.Close()
 }
 
 func CreateTable(database sql.DB) (*sql.Stmt, error) {
 	statement, err := database.Prepare("CREATE TABLE IF NOT EXISTS backup (id integer primary key, filename TEXT, path TEXT, hash TEXT, dateBackup TEXT)")
-	if err!= nil {
+	if err != nil {
 		return statement, err
 	}
 	statement.Exec()
@@ -26,7 +26,7 @@ func CreateTable(database sql.DB) (*sql.Stmt, error) {
 
 func IsFileAlreadyBackup(database sql.DB, path string, hash string) (bool, error) {
 
-	rows, err := database.Query("SELECT id from backup where path = ? and hash = ?",path, hash)
+	rows, err := database.Query("SELECT id from backup where path = ? and hash = ?", path, hash)
 
 	if !rows.Next() {
 		rows.Close()
@@ -43,7 +43,7 @@ func GetFileInDB(database sql.DB, hash string) (string, string, error) {
 	var dateBackup string
 	err := row.Scan(&path, &dateBackup)
 	if err != sql.ErrNoRows {
-		return path, dateBackup,nil
+		return path, dateBackup, nil
 	}
 	return "", "", errors.New("Error fetching row ")
 }
@@ -51,8 +51,18 @@ func GetFileInDB(database sql.DB, hash string) (string, string, error) {
 func AddFile(database sql.DB, filename string, path string, hash string, dateBackup string) (sql.Result, error) {
 
 	statement, err := database.Prepare("INSERT INTO backup (filename, path, hash, dateBackup) values (?,?,?,?)")
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 	return statement.Exec(filename, path, hash, dateBackup)
+}
+
+func DeleteFile(database sql.DB, filename string, path string, hash string, dateBackup string) (sql.Result, error)  {
+
+	statement, err := database.Prepare("DELETE FROM backup WHERE filename = ? and path = ? and hash = ? and dateBackup = ?) values (?,?,?,?)")
+	if err != nil {
+		return nil, err
+	}
+	return statement.Exec(filename, path, hash, dateBackup)
+
 }

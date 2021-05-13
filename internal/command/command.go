@@ -7,27 +7,35 @@ import (
 	"strings"
 )
 
+//Execute
+// Send the user command to the correct function
 func Execute(command string) error {
 
 	if len(strings.Fields(command)) == 0 {
 		return errors.New("")
 	}
 
-	switch strings.Fields(command)[0]{
+	switch strings.Fields(command)[0] {
 	case "init":
-		initcommand := initCommandParser(command)
-		error := executeInit(initcommand)
-		if error != nil{
-			return error
+		initcommand, err := initCommandParser(command)
+		if err != nil {
+			return err
+		}
+		err = executeInit(initcommand)
+		if err != nil {
+			return err
 		}
 	case "backup":
-		backupcommand, error := backupCommandParser(command)
-		if error != nil{
-			return error
+		backupcommand, err := backupCommandParser(command)
+		if err != nil {
+			return err
 		}
-		executeBackup(backupcommand)
+		err = executeBackup(backupcommand)
+		if err != nil {
+			return err
+		}
 	case "restore":
-		fmt.Printf("Not implemented restore")
+		fmt.Println("Not implemented restore")
 	case "exit":
 		executeExit()
 	default:
@@ -36,34 +44,40 @@ func Execute(command string) error {
 	return nil
 }
 
+//backupCommandParser
+// Parse backup command
 func backupCommandParser(command string) (backupCommand, error) {
-	if len(strings.Fields(command)) != 5 || !strings.Contains(command,"--source") || !strings.Contains(command,"--destination"){
-		return backupCommand{}, errors.New("Wrong backup parameters")
+	if len(strings.Fields(command)) != 5 || !strings.Contains(command, "--source") || !strings.Contains(command, "--destination") {
+		return backupCommand{}, errors.New("Wrong backup parameters ")
 	}
 	var backupCommand = backupCommand{}
 
-	if strings.Fields(command)[1] == "--destination" && strings.Fields(command)[3] == "--source"{
+	if strings.Fields(command)[1] == "--destination" && strings.Fields(command)[3] == "--source" {
 		backupCommand.destination = strings.Fields(command)[2]
 		backupCommand.source = strings.Fields(command)[4]
 	}
 
-	if strings.Fields(command)[3] == "--destination" && strings.Fields(command)[1] == "--source"{
+	if strings.Fields(command)[3] == "--destination" && strings.Fields(command)[1] == "--source" {
 		backupCommand.destination = strings.Fields(command)[4]
 		backupCommand.source = strings.Fields(command)[2]
 	}
 	return backupCommand, nil
 }
 
-func initCommandParser(command string) initCommand {
-	if len(strings.Fields(command)) != 3{
-		menu.Base("Wrong init parameters")
-	}
-
+//initCommandParser
+// Parse init command
+func initCommandParser(command string) (initCommand, error) {
 	var initcommand = initCommand{}
 
-	if strings.Fields(command)[1] == "--destination"{
-		initcommand.destination = strings.Fields(command)[2]
+	if len(strings.Fields(command)) != 3 {
+		return initcommand, errors.New("Wrong init parameters ")
 	}
 
-	return initcommand
+	if strings.Fields(command)[1] == "--destination" {
+		initcommand.destination = strings.Fields(command)[2]
+	}else {
+		return initcommand, errors.New("Wrong init parameters ")
+	}
+
+	return initcommand, nil
 }

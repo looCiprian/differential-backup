@@ -2,6 +2,8 @@ package command
 
 import "os"
 
-func executeExit()  {
+//executeExit
+// Exit from the program
+func executeExit() {
 	os.Exit(0)
 }

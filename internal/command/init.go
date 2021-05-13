@@ -11,10 +11,12 @@ type initCommand struct {
 	destination string
 }
 
+//executeInit
+// Execute directory initialization
 func executeInit(initcommand initCommand) error {
 	destination := initcommand.destination
 
-	if !file_mng.IsEmptyDirectory(destination){
+	if !file_mng.IsEmptyDirectory(destination) {
 		return errors.New("The directory is not empty ")
 	}
 
@@ -22,9 +24,13 @@ func executeInit(initcommand initCommand) error {
 
 	dbAlreadyExists := file_mng.FileExists(destination)
 	if !dbAlreadyExists {
-		database,_ := db_mng.OpenDB(destination)
+		database, err := db_mng.OpenDB(destination)
+		if err != nil {
+			return err
+		}
 		db_mng.CreateTable(*database)
-	}else {
+		db_mng.CloseDB(*database)
+	} else {
 		return errors.New("Backup directory already in use ")
 	}
 

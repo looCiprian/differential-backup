@@ -33,12 +33,12 @@ func DirectoriesInPath(destination string) []os.FileInfo {
 	return files
 }
 
-func IsEmptyDirectory(destination string) bool{
+func IsEmptyDirectory(destination string) bool {
 	files, err := ioutil.ReadDir(destination)
 	if err != nil {
 		log.Fatal(err)
 	}
-	if len(files) == 0{
+	if len(files) == 0 {
 		return true
 	}
 	return false

@@ -8,8 +8,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/kalafut/imohash"
+	"github.com/schollz/progressbar/v3"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 )
@@ -19,6 +19,8 @@ type backupCommand struct {
 	source      string
 }
 
+//executeBackup
+// Execute backup
 func executeBackup(backupcommand backupCommand) error {
 	destination := backupcommand.destination
 	destination = file_mng.AddSlashIfNotPresent(destination)
@@ -51,22 +53,32 @@ func executeBackup(backupcommand backupCommand) error {
 			hashString := hex.EncodeToString(hash[:])
 			fileExists, err := db_mng.IsFileAlreadyBackup(*connection, relativePath, hashString)
 
+			// No error no file present in backup
 			if err == nil && !fileExists {
 				_, err := db_mng.AddFile(*connection, info.Name(), relativePath, hashString, date)
+				// DB error
 				if err != nil {
-					fmt.Println("Error: " + err.Error())
 					db_mng.CloseDB(*connection)
-				} else {
+					return errors.New("Error: " + err.Error())
+				} else { // OK database updated, start copying
 					fmt.Println("Coping file: " + info.Name())
-					copyFile(fullSourcePath, destination+relativePath)
+					_, err := copyFile(fullSourcePath, info.Size(), destination+relativePath)
+					if err != nil {
+						// If copy error, rollback DB entry
+						_, err := db_mng.DeleteFile(*connection, info.Name(), relativePath, hashString, date)
+						if err != nil {
+							return err
+						}
+						return err
+					}
 				}
-			} else if err == nil && fileExists {
+			} else if err == nil && fileExists {		// No error but file already exists
 				path, dateBackup, err := db_mng.GetFileInDB(*connection, hashString)
 				if err == nil {
 					fmt.Println("File " + info.Name() + " already present in " + destination + path + " backUp at: " + dateBackup)
 				}
-			} else if err != nil {
-				fmt.Println("Error: " + err.Error())
+			} else if err != nil { // DB error
+				 return errors.New("Error: " + err.Error())
 			}
 		}
 		return nil
@@ -74,12 +86,13 @@ func executeBackup(backupcommand backupCommand) error {
 	return nil
 }
 
-func copyFile(source string, destination string) (int64, error) {
+//copyFile
+// Copy file from source to destination
+func copyFile(source string, size int64, destination string) (int64, error) {
 
 	sourceFile, err := os.Open(source)
 	if err != nil {
-		log.Fatal(err)
-		return 0, nil
+		return 0, err
 	}
 	defer sourceFile.Close()
 
@@ -87,26 +100,20 @@ func copyFile(source string, destination string) (int64, error) {
 	dir, _ := filepath.Split(destination)
 	err = os.MkdirAll(dir, 0755)
 	if err != nil {
-		log.Fatal(err)
-		return 0, nil
+		return 0, err
 	}
 	// Create new file
 	newFile, err := os.Create(destination)
 	if err != nil {
-		log.Fatal(err)
-		return 0, nil
+		return 0, err
 	}
 	defer newFile.Close()
 
-	bytesCopied, err := io.Copy(newFile, sourceFile)
+	bar := progressbar.DefaultBytes(size, "Copying ")
+
+	bytesCopied, err := io.Copy(io.MultiWriter(newFile, bar), sourceFile)
 	if err != nil {
-		log.Fatal(err)
-		return 0, nil
+		return 0, err
 	}
 	return bytesCopied, nil
-}
-
-func ExecuteBackupTest() {
-	//backup --source /Users/lorenzograzian/go/src/diff-backup/test/toBackup --destination /Users/lorenzograzian/go/src/diff-backup/test/backup
-	executeBackup(backupCommand{destination: "/Users/lorenzograzian/go/src/diff-backup/test/backup", source: "/Users/lorenzograzian/go/src/diff-backup/test/toBackup"})
 }

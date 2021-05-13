@@ -16,16 +16,16 @@ func completer(d prompt.Document) []prompt.Suggest {
 
 	currentText := d.TextBeforeCursor()
 
-	if strings.Contains(currentText, "init") ||  strings.Contains(currentText, "backup") ||  strings.Contains(currentText, "restore") || strings.Contains(currentText, "exit"){
-		switch  strings.Fields(currentText)[0]{
+	if strings.Contains(currentText, "init") || strings.Contains(currentText, "backup") || strings.Contains(currentText, "restore") || strings.Contains(currentText, "exit") {
+		switch strings.Fields(currentText)[0] {
 		case "init":
-			s=menu_init(currentText)
+			s = menuInit(currentText)
 		case "backup":
-			s=menu_backup(currentText)
+			s = menuBackup(currentText)
 		case "restore":
-			s=menu_restore()
+			s = menu_restore()
 		case "exit":
-			s=menu_exit()
+			s = menuExit()
 		}
 	}
 	return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)

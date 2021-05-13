@@ -8,5 +8,3 @@ func FileExists(destination string) bool {
 	}
 	return false
 }
-
-

@@ -9,10 +9,9 @@ import (
 func main() {
 	for {
 		commandToExecute := menu.Base("Press TAB for options")
-		error := command.Execute(commandToExecute)
-		if error != nil {
-			fmt.Println(error)
+		err := command.Execute(commandToExecute)
+		if err != nil {
+			fmt.Println(err)
 		}
 	}
-	//command.ExecuteBackupTest()
 }

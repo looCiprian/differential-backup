@@ -5,12 +5,12 @@ import (
 	"strings"
 )
 
-func menu_init(currentText string) []prompt.Suggest {
+func menuInit(currentText string) []prompt.Suggest {
 	s := []prompt.Suggest{
 		{Text: "--destination", Description: "Set the repository"},
 	}
 
-	if strings.Contains(currentText,"--destination"){
+	if strings.Contains(currentText, "--destination") {
 		s = []prompt.Suggest{
 		}
 		return s
