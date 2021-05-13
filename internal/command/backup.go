@@ -22,13 +22,15 @@ type backupCommand struct {
 //executeBackup
 // Execute backup
 func executeBackup(backupcommand backupCommand) error {
-	destination := backupcommand.destination
-	destination = file_mng.AddSlashIfNotPresent(destination)
-	databasePath := destination + "index.db"
-	source := backupcommand.source
+	destination := backupcommand.destination					// /tmp/backup
+	destination = file_mng.AddSlashIfNotPresent(destination)	// /tmp/backup/
+	databasePath := destination + "index.db"	// /tmp/backup/index.db
+	source := backupcommand.source			// /tmp/source
+	baseSourcePath := file_mng.AddSlashIfNotPresent(filepath.Base(source)) // source/
 	date := time_mng.CurrentDate()
-	datePath := date + "/"
-	destination = destination + datePath
+	datePath := date + "/" // 31-12-2021/
+
+	destination = destination + datePath // /tmp/backup/ + 31-12-2021/
 
 	if !file_mng.FileExists(databasePath) {
 		return errors.New("Backup Directory not initialized. Use init option ")
@@ -47,25 +49,24 @@ func executeBackup(backupcommand backupCommand) error {
 			return err
 		}
 		if !info.IsDir() {
-			fullSourcePath := path
-			relativePath := path[len(source)+1:]
+			fullSourcePath := path				// /tmp/source/1/1.txt
+			relativePath := fullSourcePath[len(source) - len(baseSourcePath)+1:]  // source/1/1.txt
 			hash, _ := imohash.SumFile(fullSourcePath)
 			hashString := hex.EncodeToString(hash[:])
-			fileExists, err := db_mng.IsFileAlreadyBackup(*connection, relativePath, hashString)
+			fileExists, err := db_mng.IsFileAlreadyBackup(connection, relativePath, hashString)
 
 			// No error no file present in backup
 			if err == nil && !fileExists {
-				_, err := db_mng.AddFile(*connection, info.Name(), relativePath, hashString, date)
+				_, err := db_mng.AddFile(databasePath, connection, info.Name(), relativePath, hashString, date)
 				// DB error
 				if err != nil {
-					db_mng.CloseDB(*connection)
 					return errors.New("Error: " + err.Error())
 				} else { // OK database updated, start copying
 					fmt.Println("Coping file: " + info.Name())
 					_, err := copyFile(fullSourcePath, info.Size(), destination+relativePath)
 					if err != nil {
 						// If copy error, rollback DB entry
-						_, err := db_mng.DeleteFile(*connection, info.Name(), relativePath, hashString, date)
+						_, err := db_mng.DeleteFile(connection, info.Name(), relativePath, hashString, date)
 						if err != nil {
 							return err
 						}
@@ -73,7 +74,7 @@ func executeBackup(backupcommand backupCommand) error {
 					}
 				}
 			} else if err == nil && fileExists {		// No error but file already exists
-				path, dateBackup, err := db_mng.GetFileInDB(*connection, hashString)
+				path, dateBackup, err := db_mng.GetFileInDB(connection, hashString)
 				if err == nil {
 					fmt.Println("File " + info.Name() + " already present in " + destination + path + " backUp at: " + dateBackup)
 				}
@@ -83,6 +84,8 @@ func executeBackup(backupcommand backupCommand) error {
 		}
 		return nil
 	})
+	db_mng.CloseDB(connection)
+	fmt.Println("Backup Done! ")
 	return nil
 }
 
@@ -94,7 +97,7 @@ func copyFile(source string, size int64, destination string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer sourceFile.Close()
+
 
 	// Create new directoty if does not exist
 	dir, _ := filepath.Split(destination)
@@ -107,11 +110,13 @@ func copyFile(source string, size int64, destination string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer newFile.Close()
 
-	bar := progressbar.DefaultBytes(size, "Copying ")
+
+	bar := progressbar.DefaultBytes(size, "Progress")
 
 	bytesCopied, err := io.Copy(io.MultiWriter(newFile, bar), sourceFile)
+	sourceFile.Close()
+	newFile.Close()
 	if err != nil {
 		return 0, err
 	}

@@ -28,8 +28,8 @@ func executeInit(initcommand initCommand) error {
 		if err != nil {
 			return err
 		}
-		db_mng.CreateTable(*database)
-		db_mng.CloseDB(*database)
+		db_mng.CreateTable(database)
+		db_mng.CloseDB(database)
 	} else {
 		return errors.New("Backup directory already in use ")
 	}

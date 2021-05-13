@@ -23,10 +23,11 @@ test
 test
 ├── backup
 │   ├── 12-05-2021
-│   │   ├── 1.txt
-│   │   └── 2
-│   │       ├── 2.txt
-│   │       └── 3.txt
+│   │   └── toBackup
+│   │       ├── 1.txt
+│   │       └── 2
+│   │           ├── 2.txt
+│   │           └── 3.txt
 │   └── index.db
 └── toBackup
     ├── 1.txt
@@ -40,14 +41,16 @@ test
 test
 ├── backup
 │   ├── 12-05-2021
-│   │   ├── 1.txt
-│   │   └── 2
-│   │       ├── 2.txt
-│   │       └── 3.txt
+│   │   └── toBackup
+│   │       ├── 1.txt
+│   │       └── 2
+│   │           ├── 2.txt
+│   │           └── 3.txt
 │   ├── 13-05-2021
-│   │   ├── 2
-│   │   │   └── 3.txt
-│   │   └── 3.txt
+│   │   └── toBackup
+│   │       ├── 2
+│   │       │   └── 3.txt
+│   │       └── 3.txt
 │   └── index.db
 └── toBackup
     ├── 1.txt

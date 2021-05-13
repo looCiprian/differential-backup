@@ -15,7 +15,7 @@ func DirectoryExists(directory string) bool {
 
 func CreateDirectoryIfNotExists(destination string) bool {
 	if !DirectoryExists(destination) {
-		err := os.Mkdir(destination, 0755)
+		err := os.MkdirAll(destination, 0755)
 		if err != nil {
 			log.Fatal(err)
 		}
