@@ -58,7 +58,7 @@ func restoreCommandParser(command string) (restoreCommand, error) {
 		!strings.Contains(command, "--source") ||
 		!strings.Contains(command, "--destination") ||
 		!strings.Contains(command, "--date") {
-		return restoreCommand{}, errors.New("Wrong backup parameters ")
+		return restoreCommand{}, errors.New("Wrong restore parameters ")
 	}
 
 	var restorecommand = restoreCommand{}

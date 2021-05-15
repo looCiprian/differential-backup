@@ -14,17 +14,25 @@ type initCommand struct {
 //executeInit
 // Execute directory initialization
 func executeInit(initcommand initCommand) error {
-	destination := initcommand.destination
+	destination := file_mng.AddSlashIfNotPresent(initcommand.destination)
 
 	if !file_mng.IsEmptyDirectory(destination) {
-		return errors.New("The directory is not empty ")
+		fmt.Println("The directory is not empty ")
+		for i, file := range file_mng.FilesInDirectory(destination){
+			fmt.Println("File" + string(i) + " Name: " + file)
+		}
+		return errors.New("")
 	}
 
-	destination = file_mng.AddSlashIfNotPresent(destination) + "index.db"
+	DBPath := destination + "index.db"
 
-	dbAlreadyExists := file_mng.FileExists(destination)
+	if file_mng.CreateNewFileWithContent(destination + "IMPORTANT.txt", "DO NOT DELETE ADD FILES MANUALLY, IF YOU NEED SOME DATA ONLY COPY IS ALLOWED") != nil{
+		return errors.New("Cannot write important file ")
+	}
+
+	dbAlreadyExists := file_mng.FileExists(DBPath)
 	if !dbAlreadyExists {
-		err := db_mng.OpenDB(destination)
+		err := db_mng.OpenDB(DBPath)
 		if err != nil {
 			return err
 		}
@@ -38,3 +46,5 @@ func executeInit(initcommand initCommand) error {
 
 	return nil
 }
+
+

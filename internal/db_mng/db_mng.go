@@ -175,3 +175,9 @@ func AddRestoredFile(databasePath string, filename string, path string, hash str
 	CloseDBTemp(database1)
 	return res, err
 }
+
+func DropRestoreTable() error{
+
+	_, err := DB.Exec("DROP TABLE IF EXISTS restore")
+	return err
+}

@@ -43,14 +43,17 @@ func executeRestore(command restoreCommand) error {
 	if err != nil{
 		return err
 	}
-	
+
+	// Get datas from selected to the oldest
 	datesToRestore, err := getDateRangeToRestore(dates, dateFromRestore)
 	if err != nil {
 		return err
 	}
 
+	// For each date
 	for i:= len(datesToRestore)-1; i>=0; i-- {
 		pathSource := source + file_mng.AddSlashIfNotPresent(datesToRestore[i])
+		// Iterate the backup date directory
 		filepath.Walk(pathSource, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
@@ -60,6 +63,7 @@ func executeRestore(command restoreCommand) error {
 				hash, _ := imohash.SumFile(filePathSource)
 				hashString := hex.EncodeToString(hash[:])
 				relativeFilePath := filePathSource[len(pathSource):]
+				// Check if already restore (only relative file path to maintain only the last file version)
 				alreadyRestored, err := db_mng.IsFileAlreadyRestored(relativeFilePath)
 				if err != nil {
 					return err
@@ -74,6 +78,7 @@ func executeRestore(command restoreCommand) error {
 					if err != nil {
 						return err
 					}
+					// Save restored file to temp restore table
 					if _, err:= db_mng.AddRestoredFile(databasePath, info.Name(), relativeFilePath, hashString, "", info.Size()); err!=nil{
 						return err
 					}
@@ -84,6 +89,10 @@ func executeRestore(command restoreCommand) error {
 
 			return nil
 		})
+	}
+
+	if err := db_mng.DropRestoreTable();err!=nil{
+		return err
 	}
 
 	return nil

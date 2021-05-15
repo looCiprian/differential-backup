@@ -47,3 +47,17 @@ func CopyFile(source string, size int64, destination string) (int64, error) {
 	}
 	return bytesCopied, nil
 }
+
+func CreateNewFileWithContent(path string, content string) error  {
+	newFile, err := os.Create(path)
+
+	_, err = newFile.WriteString(content)
+
+	defer newFile.Close()
+
+	if err != nil {
+		return err
+	}
+	return nil
+
+}

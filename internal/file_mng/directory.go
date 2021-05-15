@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 func DirectoryExists(directory string) bool {
@@ -32,6 +33,23 @@ func DirectoriesInPath(destination string) []os.FileInfo {
 	}
 	return files
 }
+
+func FilesInDirectory(pathSource string) []string {
+
+	var files []string
+
+	filepath.Walk(pathSource, func(path string, info os.FileInfo, err error) error {
+
+		if !info.IsDir(){
+			files = append(files, info.Name())
+		}
+
+		return nil
+	})
+
+	return files
+}
+
 
 func IsEmptyDirectory(destination string) bool {
 	files, err := ioutil.ReadDir(destination)
