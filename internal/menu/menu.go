@@ -15,6 +15,7 @@ func completer(d prompt.Document) []prompt.Suggest {
 	}
 
 	currentText := d.TextBeforeCursor()
+	currentWord := d.GetWordBeforeCursorWithSpace()
 
 	if strings.Contains(currentText, "init") || strings.Contains(currentText, "backup") || strings.Contains(currentText, "restore") || strings.Contains(currentText, "exit") {
 		switch strings.Fields(currentText)[0] {
@@ -23,7 +24,7 @@ func completer(d prompt.Document) []prompt.Suggest {
 		case "backup":
 			s = menuBackup(currentText)
 		case "restore":
-			s = menu_restore()
+			s = menu_restore(currentText, currentWord)
 		case "exit":
 			s = menuExit()
 		}

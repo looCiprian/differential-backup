@@ -36,12 +36,55 @@ func Execute(command string) error {
 		}
 	case "restore":
 		fmt.Println("Not implemented restore")
+		_, err := restoreCommandParser(command)
+		if err != nil {
+			return err
+		}
 	case "exit":
 		executeExit()
 	default:
 		menu.Base("Wrong command. Press TAB for help")
 	}
 	return nil
+}
+
+func restoreCommandParser(command string) (restoreCommand, error) {
+
+	if len(strings.Fields(command)) != 7 ||
+		!strings.Contains(command, "--source") ||
+		!strings.Contains(command, "--destination") ||
+		!strings.Contains(command, "--date") {
+		return restoreCommand{}, errors.New("Wrong backup parameters ")
+	}
+
+	var restorecommand = restoreCommand{}
+	commandArray := strings.Fields(command)
+
+	i := 0
+	for {
+
+		if commandArray[i] == "--date" {
+			restorecommand.date =  commandArray[i+1]
+			i = i+1
+		}
+		if commandArray[i] == "--destination" {
+			restorecommand.destination =  commandArray[i+1]
+			i = i+1
+		}
+		if commandArray[i] == "--source" {
+			restorecommand.source =  commandArray[i+1]
+			i = i+1
+		}
+		i = i+1
+
+		if i >= len(commandArray) {
+			break
+		}
+	}
+
+
+	return restorecommand, nil
+
 }
 
 //backupCommandParser

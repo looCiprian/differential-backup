@@ -35,7 +35,7 @@ func executeBackup(backupcommand backupCommand) error {
 	if !file_mng.FileExists(databasePath) {
 		return errors.New("Backup Directory not initialized. Use init option ")
 	}
-	connection, err := db_mng.OpenDB(databasePath)
+	err := db_mng.OpenDB(databasePath)
 	if err != nil {
 		return errors.New("Error opening DB ")
 	}
@@ -53,11 +53,11 @@ func executeBackup(backupcommand backupCommand) error {
 			relativePath := fullSourcePath[len(source) - len(baseSourcePath)+1:]  // source/1/1.txt
 			hash, _ := imohash.SumFile(fullSourcePath)
 			hashString := hex.EncodeToString(hash[:])
-			fileExists, err := db_mng.IsFileAlreadyBackup(connection, relativePath, hashString)
+			fileExists, err := db_mng.IsFileAlreadyBackup(relativePath, hashString, info.Size())
 
 			// No error no file present in backup
 			if err == nil && !fileExists {
-				_, err := db_mng.AddFile(databasePath, connection, info.Name(), relativePath, hashString, date)
+				_, err := db_mng.AddFile(databasePath, info.Name(), relativePath, hashString, date, info.Size())
 				// DB error
 				if err != nil {
 					return errors.New("Error: " + err.Error())
@@ -66,7 +66,7 @@ func executeBackup(backupcommand backupCommand) error {
 					_, err := copyFile(fullSourcePath, info.Size(), destination+relativePath)
 					if err != nil {
 						// If copy error, rollback DB entry
-						_, err := db_mng.DeleteFile(connection, info.Name(), relativePath, hashString, date)
+						_, err := db_mng.DeleteFile(info.Name(), relativePath, hashString, date)
 						if err != nil {
 							return err
 						}
@@ -74,7 +74,7 @@ func executeBackup(backupcommand backupCommand) error {
 					}
 				}
 			} else if err == nil && fileExists {		// No error but file already exists
-				path, dateBackup, err := db_mng.GetFileInDB(connection, hashString)
+				path, dateBackup, err := db_mng.GetFileInDB(hashString)
 				if err == nil {
 					fmt.Println("File " + info.Name() + " already present in " + destination + path + " backUp at: " + dateBackup)
 				}
@@ -84,7 +84,7 @@ func executeBackup(backupcommand backupCommand) error {
 		}
 		return nil
 	})
-	db_mng.CloseDB(connection)
+	db_mng.CloseDB()
 	fmt.Println("Backup Done! ")
 	return nil
 }
@@ -99,7 +99,7 @@ func copyFile(source string, size int64, destination string) (int64, error) {
 	}
 
 
-	// Create new directoty if does not exist
+	// Create new directory if does not exist
 	dir, _ := filepath.Split(destination)
 	err = os.MkdirAll(dir, 0755)
 	if err != nil {

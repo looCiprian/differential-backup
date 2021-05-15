@@ -24,12 +24,12 @@ func executeInit(initcommand initCommand) error {
 
 	dbAlreadyExists := file_mng.FileExists(destination)
 	if !dbAlreadyExists {
-		database, err := db_mng.OpenDB(destination)
+		err := db_mng.OpenDB(destination)
 		if err != nil {
 			return err
 		}
-		db_mng.CreateTable(database)
-		db_mng.CloseDB(database)
+		db_mng.CreateTable()
+		db_mng.CloseDB()
 	} else {
 		return errors.New("Backup directory already in use ")
 	}
