@@ -34,7 +34,7 @@ func menu_restore(currentText string, currentWord string) []prompt.Suggest {
 						if command[i+1] != "--date" {
 							err := db_mng.OpenDB(file_mng.AddSlashIfNotPresent(command[i+1]) + "index.db")
 							if err == nil{
-								dates = db_mng.GetBackedUpDates()
+								dates,_ = db_mng.GetAvailableRestoreDates()
 								db_mng.CloseDB()
 								break
 							}

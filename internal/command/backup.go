@@ -8,8 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/kalafut/imohash"
-	"github.com/schollz/progressbar/v3"
-	"io"
 	"os"
 	"path/filepath"
 )
@@ -63,7 +61,7 @@ func executeBackup(backupcommand backupCommand) error {
 					return errors.New("Error: " + err.Error())
 				} else { // OK database updated, start copying
 					fmt.Println("Coping file: " + info.Name())
-					_, err := copyFile(fullSourcePath, info.Size(), destination+relativePath)
+					_, err := file_mng.CopyFile(fullSourcePath, info.Size(), destination+relativePath)
 					if err != nil {
 						// If copy error, rollback DB entry
 						_, err := db_mng.DeleteFile(info.Name(), relativePath, hashString, date)
@@ -74,7 +72,7 @@ func executeBackup(backupcommand backupCommand) error {
 					}
 				}
 			} else if err == nil && fileExists {		// No error but file already exists
-				path, dateBackup, err := db_mng.GetFileInDB(hashString)
+				path, dateBackup, err := db_mng.GetFileInDB(relativePath, hashString)
 				if err == nil {
 					fmt.Println("File " + info.Name() + " already present in " + destination + path + " backUp at: " + dateBackup)
 				}
@@ -87,38 +85,4 @@ func executeBackup(backupcommand backupCommand) error {
 	db_mng.CloseDB()
 	fmt.Println("Backup Done! ")
 	return nil
-}
-
-//copyFile
-// Copy file from source to destination
-func copyFile(source string, size int64, destination string) (int64, error) {
-
-	sourceFile, err := os.Open(source)
-	if err != nil {
-		return 0, err
-	}
-
-
-	// Create new directory if does not exist
-	dir, _ := filepath.Split(destination)
-	err = os.MkdirAll(dir, 0755)
-	if err != nil {
-		return 0, err
-	}
-	// Create new file
-	newFile, err := os.Create(destination)
-	if err != nil {
-		return 0, err
-	}
-
-
-	bar := progressbar.DefaultBytes(size, "Progress")
-
-	bytesCopied, err := io.Copy(io.MultiWriter(newFile, bar), sourceFile)
-	sourceFile.Close()
-	newFile.Close()
-	if err != nil {
-		return 0, err
-	}
-	return bytesCopied, nil
 }

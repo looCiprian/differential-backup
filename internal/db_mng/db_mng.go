@@ -36,6 +36,22 @@ func CreateTable() (*sql.Stmt, error) {
 	return statement, nil
 }
 
+func CreateTempTable() (*sql.Stmt, error) {
+
+	statement, err := DB.Prepare("DROP TABLE IF EXISTS restore")
+	if err != nil {
+		return statement, err
+	}
+	statement.Exec()
+
+	statement, err = DB.Prepare("CREATE TABLE IF NOT EXISTS restore (id integer primary key, filename TEXT, path TEXT, hash TEXT, dateBackup TEXT, size INTEGER)")
+	if err != nil {
+		return statement, err
+	}
+	statement.Exec()
+	return statement, nil
+}
+
 func IsFileAlreadyBackup(path string, hash string, size int64) (bool, error) {
 
 	rows, err := DB.Query("SELECT id from backup where path = ? and hash = ? and size = ?", path, hash, size)
@@ -48,14 +64,14 @@ func IsFileAlreadyBackup(path string, hash string, size int64) (bool, error) {
 	return true, err
 }
 
-func GetFileInDB(hash string) (string, string, error) {
-	row := DB.QueryRow("SELECT path, dateBackup from backup where hash = ? limit 1", hash)
+func GetFileInDB(path string, hash string) (string, string, error) {
+	row := DB.QueryRow("SELECT path, dateBackup from backup where path = ? and hash = ? limit 1", path, hash)
 
-	var path string
+	var pathFound string
 	var dateBackup string
-	err := row.Scan(&path, &dateBackup)
+	err := row.Scan(&pathFound, &dateBackup)
 	if err != sql.ErrNoRows {
-		return path, dateBackup, nil
+		return pathFound, dateBackup, nil
 	}
 	return "", "", errors.New("Error fetching row ")
 }
@@ -95,13 +111,13 @@ func DeleteFile(filename string, path string, hash string, dateBackup string) (s
 
 }
 
-func GetBackedUpDates() []string {
+func GetAvailableRestoreDates() ([]string, error) {
 	var dates []string
 	var tempDate string
 
 	rows, err := DB.Query("SELECT DISTINCT dateBackup from backup")
 	if err != nil{
-		return dates
+		return dates, err
 	}
 
 	for rows.Next(){
@@ -109,5 +125,53 @@ func GetBackedUpDates() []string {
 		dates = append(dates, tempDate)
 	}
 
-	return dates
+	return dates, nil
+}
+
+func IsRestoreDateExist(date string) (bool, error){
+
+	row := DB.QueryRow("SELECT dateBackup from backup where dateBackup = ? limit 1", date)
+	var dateRestore string
+	err := row.Scan(&dateRestore)
+	if err != sql.ErrNoRows {
+		return true, nil
+	}
+	return false, errors.New("Error fetching row ")
+
+}
+
+func IsFileAlreadyRestored(path string) (bool, error) {
+	rows, err := DB.Query("SELECT id from restore where path = ?", path)
+
+	if !rows.Next() {
+		rows.Close()
+		return false, err
+	}
+	rows.Close()
+	return true, err
+}
+
+// TODO Inserting operation does not work with passed database connection (crash with large amount of operations), needs to open a new connection each time :(
+func AddRestoredFile(databasePath string, filename string, path string, hash string, dateBackup string, size int64) (sql.Result, error) {
+
+	var err error
+
+	database1, err := openDBTemp(databasePath)
+
+	statement, err := database1.Prepare("INSERT INTO restore (filename, path, hash, dateBackup, size) values (?,?,?,?,?)")
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := statement.Exec(filename, path, hash, dateBackup,size)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = res.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
+	CloseDBTemp(database1)
+	return res, err
 }

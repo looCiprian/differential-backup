@@ -36,7 +36,11 @@ func Execute(command string) error {
 		}
 	case "restore":
 		fmt.Println("Not implemented restore")
-		_, err := restoreCommandParser(command)
+		restorecommand, err := restoreCommandParser(command)
+		if err != nil {
+			return err
+		}
+		err = executeRestore(restorecommand)
 		if err != nil {
 			return err
 		}
