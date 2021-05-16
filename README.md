@@ -68,7 +68,8 @@ Create a new backup repository
 Performing backup
 ![Init](assets/backup.gif)
 ### Restore
-Not implemented yet
+Performing restore
+![Init](assets/restore.gif)
 
 #### Support the project
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/donate?hosted_button_id=8EWYXPED4ZU5E)

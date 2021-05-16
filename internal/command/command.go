@@ -3,7 +3,6 @@ package command
 import (
 	"diff-backup/internal/menu"
 	"errors"
-	"fmt"
 	"strings"
 )
 
@@ -35,7 +34,6 @@ func Execute(command string) error {
 			return err
 		}
 	case "restore":
-		fmt.Println("Not implemented restore")
 		restorecommand, err := restoreCommandParser(command)
 		if err != nil {
 			return err
