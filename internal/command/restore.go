@@ -124,5 +124,5 @@ func getDateRangeToRestore(dates []string, startDate string) ([]string, error) {
 		}
 	}
 
-	return sortedDates, nil
+	return dateToRestore, nil
 }

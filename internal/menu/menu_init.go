@@ -7,7 +7,7 @@ import (
 
 func menuInit(currentText string) []prompt.Suggest {
 	s := []prompt.Suggest{
-		{Text: "--destination", Description: "Set the repository"},
+		{Text: "--destination", Description: "<init_backup_dir> Set the repository"},
 	}
 
 	if strings.Contains(currentText, "--destination") {

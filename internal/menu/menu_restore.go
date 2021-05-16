@@ -10,13 +10,13 @@ import (
 func menu_restore(currentText string, currentWord string) []prompt.Suggest {
 
 	s := []prompt.Suggest{
-		{Text: "--source", Description: "Directory containing the backup"},
-		{Text: "--destination", Description: "Directory to store the restored backup"},
+		{Text: "--source", Description: "<directory_containing_backups> Directory containing the backup"},
+		{Text: "--destination", Description: "<directory_to_save_restored_files> Directory to store the restored backup"},
 	}
 
 	if strings.Contains(currentText, "--source") && !strings.Contains(currentText, "--destination"){
 		s := []prompt.Suggest{
-			{Text: "--destination", Description: "Directory to store the restored backup"},
+			{Text: "--destination", Description: "<directory_to_save_restored_files> Directory to store the restored backup"},
 		}
 		return s
 	}
@@ -65,7 +65,7 @@ func menu_restore(currentText string, currentWord string) []prompt.Suggest {
 		}
 
 		s := []prompt.Suggest{
-			{Text: "--date", Description: "Backup date to restore"},
+			{Text: "--date", Description: "<start_date_to_restore> Backup date to restore"},
 		}
 
 		return s
@@ -73,7 +73,7 @@ func menu_restore(currentText string, currentWord string) []prompt.Suggest {
 
 	if strings.Contains(currentText, "--destination"){
 		s := []prompt.Suggest{
-			{Text: "--source", Description: "Directory containing the backup"},
+			{Text: "--source", Description: "<directory_containing_backups> Directory containing the backup"},
 		}
 		return s
 	}
@@ -81,8 +81,8 @@ func menu_restore(currentText string, currentWord string) []prompt.Suggest {
 
 	if strings.Contains(currentText, "--date"){
 		s := []prompt.Suggest{
-			{Text: "--source", Description: "Directory containing the backup"},
-			{Text: "--destination", Description: "Directory to store the restored backup"},
+			{Text: "--source", Description: "<directory_containing_backups> Directory containing the backup"},
+			{Text: "--destination", Description: "<directory_to_save_restored_files> Directory to store the restored backup"},
 		}
 		return s
 	}

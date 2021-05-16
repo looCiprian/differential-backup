@@ -50,13 +50,14 @@ func FilesInDirectory(pathSource string) []string {
 	return files
 }
 
-
 func IsEmptyDirectory(destination string) bool {
 	files, err := ioutil.ReadDir(destination)
 	if err != nil {
 		log.Fatal(err)
 	}
 	if len(files) == 0 {
+		return true
+	}else if len(files) == 1 && files[0].Name() == ".DS_Store" {	// Mac create .DS_Store in each directory
 		return true
 	}
 	return false

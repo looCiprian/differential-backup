@@ -26,7 +26,7 @@ func executeInit(initcommand initCommand) error {
 
 	DBPath := destination + "index.db"
 
-	if file_mng.CreateNewFileWithContent(destination + "IMPORTANT.txt", "DO NOT DELETE ADD FILES MANUALLY, IF YOU NEED SOME DATA ONLY COPY IS ALLOWED") != nil{
+	if file_mng.CreateNewFileWithContent(destination + "IMPORTANT.txt", "DO NOT DELETE / ADD FILES MANUALLY, IF YOU NEED SOME DATA ONLY COPY OPERATIONS ARE ALLOWED") != nil{
 		return errors.New("Cannot write important file ")
 	}
 

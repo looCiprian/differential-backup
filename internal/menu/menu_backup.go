@@ -7,19 +7,19 @@ import (
 
 func menuBackup(currentText string) []prompt.Suggest {
 	s := []prompt.Suggest{
-		{Text: "--destination", Description: "Directory to store the backup"},
-		{Text: "--source", Description: "Directory to backup"},
+		{Text: "--destination", Description: "<initialized_backup_dir> Directory to store the backup"},
+		{Text: "--source", Description: "<directory_to_backup> Directory to backup"},
 	}
 
 	if strings.Contains(currentText, "--source") {
 		s = []prompt.Suggest{
-			{Text: "--destination", Description: "Directory to store the backup"},
+			{Text: "--destination", Description: "<initialized_backup_dir> Directory to store the backup"},
 		}
 		return s
 	}
 	if strings.Contains(currentText, "--destination") {
 		s = []prompt.Suggest{
-			{Text: "--source", Description: "Directory to backup"},
+			{Text: "--source", Description: "<directory_to_backup> Directory to backup"},
 		}
 		return s
 	}
