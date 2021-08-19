@@ -7,4 +7,5 @@ require (
 	github.com/kalafut/imohash v1.0.2
 	github.com/mattn/go-sqlite3 v1.14.7
 	github.com/schollz/progressbar/v3 v3.8.1
+	gopkg.in/yaml.v2 v2.4.0
 )

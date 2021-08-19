@@ -48,13 +48,14 @@ func executeBackup(backupcommand backupCommand) error {
 		}
 		if !info.IsDir() {
 			fullSourcePath := path				// /tmp/source/1/1.txt
+			fileName := filepath.Base(fullSourcePath)
 			relativePath := fullSourcePath[len(source) - len(baseSourcePath)+1:]  // source/1/1.txt
 			hash, _ := imohash.SumFile(fullSourcePath)
 			hashString := hex.EncodeToString(hash[:])
 			fileExists, err := db_mng.IsFileAlreadyBackup(relativePath, hashString, info.Size())
 
 			// No error no file present in backup
-			if err == nil && !fileExists {
+			if err == nil && !fileExists && ! file_mng.BlackListedFile(fileName){
 				_, err := db_mng.AddFile(databasePath, info.Name(), relativePath, hashString, date, info.Size())
 				// DB error
 				if err != nil {

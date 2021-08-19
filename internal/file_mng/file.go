@@ -1,6 +1,7 @@
 package file_mng
 
 import (
+	"diff-backup/internal/config"
 	"github.com/schollz/progressbar/v3"
 	"io"
 	"os"
@@ -60,4 +61,16 @@ func CreateNewFileWithContent(path string, content string) error  {
 	}
 	return nil
 
+}
+
+func BlackListedFile(file string) bool {
+
+	blackListedFiles := config.GetBlackListedFiles()
+
+	for _, b := range blackListedFiles {
+		if b == file {
+			return true
+		}
+	}
+	return false
 }
