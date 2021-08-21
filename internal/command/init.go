@@ -1,10 +1,12 @@
 package command
 
 import (
+	"diff-backup/internal/config"
 	"diff-backup/internal/db_mng"
 	"diff-backup/internal/file_mng"
 	"errors"
 	"fmt"
+	"os"
 )
 
 type initCommand struct {
@@ -40,6 +42,12 @@ func executeInit(initcommand initCommand) error {
 		db_mng.CloseDB()
 	} else {
 		return errors.New("Backup directory already in use ")
+	}
+
+	home, _ := os.UserHomeDir()
+	configPath := home + config.ConfigurationFile
+	if !file_mng.FileExists(configPath){
+		file_mng.CreateConfigFile(configPath)
 	}
 
 	fmt.Println("Backup correctly initialized ")

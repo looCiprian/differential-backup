@@ -5,9 +5,12 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
+	"os"
 )
 
 var configuration Configuration
+
+const ConfigurationFile = "/.diff-backup-config.yaml"
 
 type Configuration struct {
 	Files struct{
@@ -16,7 +19,10 @@ type Configuration struct {
 }
 
 func LoadConfiguration()  {
-	config, err := ioutil.ReadFile("/Users/lorenzograzian/go/src/diff-backup/internal/config.yaml") // just pass the file name
+
+	home, err := os.UserHomeDir()
+	configPath := home + ConfigurationFile
+	config, err := ioutil.ReadFile(configPath) // just pass the file name
 	if err != nil {
 		fmt.Print(err)
 	}

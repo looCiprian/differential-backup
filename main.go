@@ -1,19 +1,17 @@
 package main
 
-import (
-	"diff-backup/internal/command"
-	"diff-backup/internal/menu"
-	"diff-backup/internal/config"
-	"fmt"
-)
+import "diff-backup/cmd"
 
 func main() {
-	config.LoadConfiguration()
-	for {
+
+	cmd.Execute()
+
+	/*for {
 		commandToExecute := menu.Base("Press TAB for options")
 		err := command.Execute(commandToExecute)
 		if err != nil {
 			fmt.Println(err)
 		}
-	}
+	}*/
+
 }

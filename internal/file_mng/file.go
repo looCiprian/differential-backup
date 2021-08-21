@@ -15,6 +15,28 @@ func FileExists(destination string) bool {
 	return false
 }
 
+func CreateConfigFile(destination string) error {
+
+	var defautlConfig =
+`files:
+    blacklistnamefile:
+        - ".DS_Store"`
+
+	f, err := os.Create(destination)
+
+	if err != nil {
+		return err
+	}
+
+	_, err1 := f.WriteString(defautlConfig)
+
+	if err1 != nil {
+		return err
+	}
+
+	return nil
+}
+
 //copyFile
 // Copy file from source to destination
 func CopyFile(source string, size int64, destination string) (int64, error) {

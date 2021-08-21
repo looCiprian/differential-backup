@@ -1,6 +1,7 @@
 package command
 
 import (
+	"diff-backup/internal/config"
 	"diff-backup/internal/db_mng"
 	"diff-backup/internal/file_mng"
 	"diff-backup/internal/time_mng"
@@ -20,6 +21,9 @@ type backupCommand struct {
 //executeBackup
 // Execute backup
 func executeBackup(backupcommand backupCommand) error {
+
+	config.LoadConfiguration()
+
 	destination := backupcommand.destination					// /tmp/backup
 	destination = file_mng.AddSlashIfNotPresent(destination)	// /tmp/backup/
 	databasePath := destination + "index.db"	// /tmp/backup/index.db

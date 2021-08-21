@@ -1,6 +1,7 @@
 package command
 
 import (
+	"diff-backup/internal/config"
 	"diff-backup/internal/db_mng"
 	"diff-backup/internal/file_mng"
 	"diff-backup/internal/time_mng"
@@ -19,6 +20,9 @@ type restoreCommand struct {
 }
 
 func executeRestore(command restoreCommand) error {
+
+	config.LoadConfiguration()
+
 	destination := file_mng.AddSlashIfNotPresent(command.destination)
 	source := file_mng.AddSlashIfNotPresent(command.source)
 	dateFromRestore := command.date
