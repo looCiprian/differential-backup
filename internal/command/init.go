@@ -13,10 +13,16 @@ type initCommand struct {
 	destination string
 }
 
+var initCommandConfiguration initCommand
+
+func SetInitConfig(destination string)  {
+	initCommandConfiguration.destination = destination
+}
+
 //executeInit
 // Execute directory initialization
-func executeInit(initcommand initCommand) error {
-	destination := file_mng.AddSlashIfNotPresent(initcommand.destination)
+func ExecuteInit() error {
+	destination := file_mng.AddSlashIfNotPresent(initCommandConfiguration.destination)
 
 	if !file_mng.IsEmptyDirectory(destination) {
 		fmt.Println("The directory is not empty ")

@@ -18,16 +18,23 @@ type backupCommand struct {
 	source      string
 }
 
+var backupCommandConfiguration backupCommand
+
+func SetBackupConfig(source string, destination string)  {
+	backupCommandConfiguration.source = source
+	backupCommandConfiguration.destination = destination
+}
+
 //executeBackup
 // Execute backup
-func executeBackup(backupcommand backupCommand) error {
+func ExecuteBackup() error {
 
 	config.LoadConfiguration()
 
-	destination := backupcommand.destination					// /tmp/backup
-	destination = file_mng.AddSlashIfNotPresent(destination)	// /tmp/backup/
-	databasePath := destination + "index.db"	// /tmp/backup/index.db
-	source := backupcommand.source			// /tmp/source
+	destination := backupCommandConfiguration.destination                  // /tmp/backup
+	destination = file_mng.AddSlashIfNotPresent(destination)               // /tmp/backup/
+	databasePath := destination + "index.db"                               // /tmp/backup/index.db
+	source := backupCommandConfiguration.source                            // /tmp/source
 	baseSourcePath := file_mng.AddSlashIfNotPresent(filepath.Base(source)) // source/
 	date := time_mng.CurrentDate()
 	datePath := date + "/" // 31-12-2021/

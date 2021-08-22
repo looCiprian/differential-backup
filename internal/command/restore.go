@@ -19,13 +19,21 @@ type restoreCommand struct {
 	date		string
 }
 
-func executeRestore(command restoreCommand) error {
+var restoreCommandConfiguration restoreCommand
+
+func SetRestoreConfig(source string, destination string, date string)  {
+	restoreCommandConfiguration.source = source
+	restoreCommandConfiguration.destination = destination
+	restoreCommandConfiguration.date = date
+}
+
+func ExecuteRestore() error {
 
 	config.LoadConfiguration()
 
-	destination := file_mng.AddSlashIfNotPresent(command.destination)
-	source := file_mng.AddSlashIfNotPresent(command.source)
-	dateFromRestore := command.date
+	destination := file_mng.AddSlashIfNotPresent(restoreCommandConfiguration.destination)
+	source := file_mng.AddSlashIfNotPresent(restoreCommandConfiguration.source)
+	dateFromRestore := restoreCommandConfiguration.date
 	databasePath := file_mng.AddSlashIfNotPresent(source) + "index.db"
 
 	if !file_mng.FileExists(databasePath) {
@@ -107,6 +115,19 @@ func createRestoreTable(date string) error {
 		return errors.New("No Date " + date + " to restore")
 	}
 	return nil
+}
+
+func GetResorableDates() ([]string, error) {
+	err := db_mng.OpenDB(file_mng.AddSlashIfNotPresent(restoreCommandConfiguration.source) + "index.db")
+
+	var dates []string
+
+	if err == nil{
+		dates, _ = db_mng.GetAvailableRestoreDates()
+		db_mng.CloseDB()
+	}
+
+	return dates, err
 }
 
 func getDateRangeToRestore(dates []string, startDate string) ([]string, error) {

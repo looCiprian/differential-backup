@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 var (
@@ -16,6 +14,9 @@ var (
 )
 
 func init()  {
+
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
+
 	rootCmd.AddCommand(initCmd)
 	initCmd.Flags().StringVarP(&initSource, "source", "s","","Init directory")
 	initCmd.MarkFlagRequired("source")
@@ -35,12 +36,14 @@ func init()  {
 	restoreCmd.MarkFlagRequired("date")
 
 	restoreCmd.AddCommand(listRestoreDateCmd)
+	listRestoreDateCmd.Flags().StringVarP(&restoreSource, "source", "s", "", "Restore source")
+	listRestoreDateCmd.MarkFlagRequired("source")
 
 }
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		//fmt.Fprintln(os.Stderr, err)
+		//os.Exit(1)
 	}
 }

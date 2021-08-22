@@ -1,11 +1,6 @@
 package command
 
-import (
-	"diff-backup/internal/menu"
-	"errors"
-	"strings"
-)
-
+/*
 //Execute
 // Send the user command to the correct function
 func Execute(command string) error {
@@ -126,3 +121,4 @@ func initCommandParser(command string) (initCommand, error) {
 
 	return initcommand, nil
 }
+*/
