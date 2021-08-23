@@ -36,6 +36,10 @@ func ExecuteRestore() error {
 	dateFromRestore := restoreCommandConfiguration.date
 	databasePath := file_mng.AddSlashIfNotPresent(source) + "index.db"
 
+	if !file_mng.IsEmptyDirectory(destination){
+		return errors.New("Restore directory (" + destination + ") not empty ")
+	}
+
 	if !file_mng.FileExists(databasePath) {
 		return errors.New("Backup Directory not initialized. Use init option ")
 	}

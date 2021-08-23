@@ -103,8 +103,26 @@ restore
     ├── 3.txt --> content "new content"
     └── 4.txt
 ```
+## How to use - V2.0
+```
+diff-backup is a backup tool that perform incremental backup for a specific directory
 
-## How to use
+Usage:
+  diff-backup [command]
+
+Available Commands:
+  backup      backup command will perform the backup of the <source> directory to the <destination> directory
+  help        Help about any command
+  init        init command will initialize the <source> directory that will used for backups
+  restore     restore command will restore the backup of the <source> directory to the <destination> directory from a certain <date>
+  version     Print the version number of diff-backup
+
+Flags:
+  -h, --help   help for diff-backup
+
+```
+
+## How to use - V1.0
 ### Init
 Create a new backup repository
 ![Init](assets/init.gif)
@@ -114,13 +132,16 @@ Performing backup
 ### Restore
 Performing restore
 ![Init](assets/restore.gif)
+### Known bugs - V1.0
+Not supporting space on \<source\> and \<destination\>
 
 ## Dependencies
-- sqlite drivers for OS
+- sqlite drivers for your OS
 - github.com/c-bata/go-prompt
 - github.com/kalafut/imohash
 - github.com/mattn/go-sqlite3
 - github.com/schollz/progressbar/v3
+- github.com/spf13/cobra
 
 #### Support the project
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/donate?hosted_button_id=8EWYXPED4ZU5E)

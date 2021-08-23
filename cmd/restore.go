@@ -16,11 +16,14 @@ var (
 		Use:   "restore",
 		Short: "restore command will restore the backup of the <source> directory to the <destination> directory from a certain <date>",
 		Long: `restore command will restore the backup of the <source> directory to the <destination> directory from a certain <date>`,
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
+
 			internalCommand.SetRestoreConfig(restoreSource, restoreDestination, restoreDate)
 			if err := internalCommand.ExecuteRestore(); err != nil {
-				fmt.Println(err)
+				return err
 			}
+
+			return nil
 		},
 	}
 

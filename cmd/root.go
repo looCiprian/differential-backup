@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 )
 
@@ -8,14 +9,16 @@ var (
 
 	rootCmd = &cobra.Command{
 		Use:   "diff-backup",
-		Short: "diff-backup",
-		Long: `diff-backup`,
+		Short: "diff-backup is a backup tool that perform incremental backup for a specific directory",
+		Long: `diff-backup is a backup tool that perform incremental backup for a specific directory`,
 	}
 )
 
 func init()  {
 
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
+
+	rootCmd.AddCommand(versionCmd)
 
 	rootCmd.AddCommand(initCmd)
 	initCmd.Flags().StringVarP(&initSource, "source", "s","","Init directory")
@@ -43,6 +46,7 @@ func init()  {
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
+		fmt.Println(err)
 		//fmt.Fprintln(os.Stderr, err)
 		//os.Exit(1)
 	}
