@@ -1,11 +1,11 @@
 package command
 
 import (
-	"diff-backup/internal/config"
-	"diff-backup/internal/db_mng"
-	"diff-backup/internal/file_mng"
 	"errors"
 	"fmt"
+	"github.com/looCiprian/diff-backup/internal/config"
+	"github.com/looCiprian/diff-backup/internal/db_mng"
+	"github.com/looCiprian/diff-backup/internal/file_mng"
 	"os"
 )
 

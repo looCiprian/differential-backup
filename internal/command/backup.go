@@ -1,10 +1,10 @@
 package command
 
 import (
-	"diff-backup/internal/config"
-	"diff-backup/internal/db_mng"
-	"diff-backup/internal/file_mng"
-	"diff-backup/internal/time_mng"
+	"github.com/looCiprian/diff-backup/internal/config"
+	"github.com/looCiprian/diff-backup/internal/db_mng"
+	"github.com/looCiprian/diff-backup/internal/file_mng"
+	"github.com/looCiprian/diff-backup/internal/time_mng"
 	"encoding/hex"
 	"errors"
 	"fmt"

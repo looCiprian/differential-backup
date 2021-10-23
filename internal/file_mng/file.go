@@ -1,7 +1,7 @@
 package file_mng
 
 import (
-	"diff-backup/internal/config"
+	"github.com/looCiprian/diff-backup/internal/config"
 	"github.com/schollz/progressbar/v3"
 	"io"
 	"os"

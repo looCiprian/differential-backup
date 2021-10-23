@@ -1,6 +1,6 @@
 package main
 
-import "diff-backup/cmd"
+import "github.com/looCiprian/diff-backup/cmd"
 
 func main() {
 

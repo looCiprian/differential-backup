@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	internalCommand "diff-backup/internal/command"
+	internalCommand "github.com/looCiprian/diff-backup/internal/command"
 	"fmt"
 	"github.com/spf13/cobra"
 )
