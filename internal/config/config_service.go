@@ -2,10 +2,10 @@ package config
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
-	"os"
+
+	"gopkg.in/yaml.v2"
 )
 
 var configuration Configuration
@@ -13,15 +13,14 @@ var configuration Configuration
 const ConfigurationFile = "/.diff-backup-config.yaml"
 
 type Configuration struct {
-	Files struct{
+	Files struct {
 		Blacklistnamefile []string
 	}
 }
 
-func LoadConfiguration()  {
+func LoadConfiguration(destination string) {
 
-	home, err := os.UserHomeDir()
-	configPath := home + ConfigurationFile
+	configPath := destination + ConfigurationFile
 	config, err := ioutil.ReadFile(configPath) // just pass the file name
 	if err != nil {
 		fmt.Print(err)
@@ -34,6 +33,6 @@ func LoadConfiguration()  {
 
 }
 
-func GetBlackListedFiles() []string{
+func GetBlackListedFiles() []string {
 	return configuration.Files.Blacklistnamefile
 }

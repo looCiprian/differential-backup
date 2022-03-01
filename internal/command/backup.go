@@ -1,16 +1,13 @@
 package command
 
 import (
-	"github.com/looCiprian/diff-backup/internal/config"
-	"github.com/looCiprian/diff-backup/internal/db_mng"
-	"github.com/looCiprian/diff-backup/internal/file_mng"
-	"github.com/looCiprian/diff-backup/internal/time_mng"
-	"encoding/hex"
-	"errors"
 	"fmt"
-	"github.com/kalafut/imohash"
 	"os"
 	"path/filepath"
+
+	"github.com/looCiprian/diff-backup/internal/config"
+	"github.com/looCiprian/diff-backup/internal/file_mng"
+	"github.com/looCiprian/diff-backup/internal/time_mng"
 )
 
 type backupCommand struct {
@@ -20,34 +17,24 @@ type backupCommand struct {
 
 var backupCommandConfiguration backupCommand
 
-func SetBackupConfig(source string, destination string)  {
+func SetBackupConfig(source string, destination string) {
 	backupCommandConfiguration.source = source
 	backupCommandConfiguration.destination = destination
 }
 
-//executeBackup
 // Execute backup
 func ExecuteBackup() error {
 
-	config.LoadConfiguration()
+	destination := backupCommandConfiguration.destination    // /tmp/backup
+	destination = file_mng.AddSlashIfNotPresent(destination) // /tmp/backup/
+	config.LoadConfiguration(destination)
 
-	destination := backupCommandConfiguration.destination                  // /tmp/backup
-	destination = file_mng.AddSlashIfNotPresent(destination)               // /tmp/backup/
-	databasePath := destination + "index.db"                               // /tmp/backup/index.db
-	source := backupCommandConfiguration.source                            // /tmp/source
-	baseSourcePath := file_mng.AddSlashIfNotPresent(filepath.Base(source)) // source/
+	destinationRoot := destination
+	source := backupCommandConfiguration.source // /tmp/source
 	date := time_mng.CurrentDate()
 	datePath := date + "/" // 31-12-2021/
 
 	destination = destination + datePath // /tmp/backup/ + 31-12-2021/
-
-	if !file_mng.FileExists(databasePath) {
-		return errors.New("Backup Directory not initialized. Use init option ")
-	}
-	err := db_mng.OpenDB(databasePath)
-	if err != nil {
-		return errors.New("Error opening DB ")
-	}
 
 	if file_mng.CreateDirectoryIfNotExists(destination) {
 		fmt.Println("Created a new backup dir: " + destination)
@@ -58,43 +45,45 @@ func ExecuteBackup() error {
 			return err
 		}
 		if !info.IsDir() {
-			fullSourcePath := path				// /tmp/source/1/1.txt
+			fullSourcePath := path // /tmp/source/1/1.txt
 			fileName := filepath.Base(fullSourcePath)
-			relativePath := fullSourcePath[len(source) - len(baseSourcePath)+1:]  // source/1/1.txt
-			hash, _ := imohash.SumFile(fullSourcePath)
-			hashString := hex.EncodeToString(hash[:])
-			fileExists, err := db_mng.IsFileAlreadyBackup(relativePath, hashString, info.Size())
+			relativePath := fullSourcePath[len(source)+1:] // 1/1.txt
+			hashString := file_mng.GetFileHash(fullSourcePath)
+			fileExists, date := isFileAlreadyBackup(destinationRoot, relativePath, hashString)
 
 			// No error no file present in backup
-			if err == nil && !fileExists && ! file_mng.BlackListedFile(fileName){
-				_, err := db_mng.AddFile(databasePath, info.Name(), relativePath, hashString, date, info.Size())
-				// DB error
+			if !fileExists && !file_mng.BlackListedFile(fileName) {
+
+				fmt.Println("Coping file: " + info.Name())
+				_, err := file_mng.CopyFile(fullSourcePath, info.Size(), destination+relativePath)
 				if err != nil {
-					return errors.New("Error: " + err.Error())
-				} else { // OK database updated, start copying
-					fmt.Println("Coping file: " + info.Name())
-					_, err := file_mng.CopyFile(fullSourcePath, info.Size(), destination+relativePath)
-					if err != nil {
-						// If copy error, rollback DB entry
-						_, err := db_mng.DeleteFile(info.Name(), relativePath, hashString, date)
-						if err != nil {
-							return err
-						}
-						return err
-					}
+					fmt.Println("Error copying file: " + info.Name())
 				}
-			} else if err == nil && fileExists {		// No error but file already exists
-				path, dateBackup, err := db_mng.GetFileInDB(relativePath, hashString)
-				if err == nil {
-					fmt.Println("File " + info.Name() + " already present in " + destination + path + " backUp at: " + dateBackup)
-				}
-			} else if err != nil { // DB error
-				 return errors.New("Error: " + err.Error())
+			} else if fileExists { // No error but file already exists
+
+				fmt.Println("File " + info.Name() + " already present in " + destinationRoot + date + relativePath)
 			}
 		}
 		return nil
 	})
-	db_mng.CloseDB()
 	fmt.Println("Backup Done! ")
 	return nil
+}
+
+func isFileAlreadyBackup(backupPath string, relativePath string, hash string) (bool, string) {
+
+	directories := file_mng.DirectoriesInPath(backupPath)
+
+	for _, dir := range directories {
+		if dir.IsDir() {
+			path := backupPath + dir.Name() + "/" + relativePath
+			if file_mng.FileExists(path) {
+				if file_mng.GetFileHash(path) == hash {
+					return true, file_mng.AddSlashIfNotPresent(dir.Name())
+				}
+			}
+		}
+	}
+
+	return false, ""
 }

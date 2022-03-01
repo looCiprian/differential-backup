@@ -1,11 +1,14 @@
 package file_mng
 
 import (
-	"github.com/looCiprian/diff-backup/internal/config"
-	"github.com/schollz/progressbar/v3"
+	"encoding/hex"
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/kalafut/imohash"
+	"github.com/looCiprian/diff-backup/internal/config"
+	"github.com/schollz/progressbar/v3"
 )
 
 func FileExists(destination string) bool {
@@ -17,8 +20,7 @@ func FileExists(destination string) bool {
 
 func CreateConfigFile(destination string) error {
 
-	var defautlConfig =
-`files:
+	var defautlConfig = `files:
     blacklistnamefile:
         - ".DS_Store"`
 
@@ -46,7 +48,6 @@ func CopyFile(source string, size int64, destination string) (int64, error) {
 		return 0, err
 	}
 
-
 	// Create new directory if does not exist
 	dir, _ := filepath.Split(destination)
 	err = os.MkdirAll(dir, 0755)
@@ -59,7 +60,6 @@ func CopyFile(source string, size int64, destination string) (int64, error) {
 		return 0, err
 	}
 
-
 	bar := progressbar.DefaultBytes(size, "Progress")
 
 	bytesCopied, err := io.Copy(io.MultiWriter(newFile, bar), sourceFile)
@@ -71,7 +71,7 @@ func CopyFile(source string, size int64, destination string) (int64, error) {
 	return bytesCopied, nil
 }
 
-func CreateNewFileWithContent(path string, content string) error  {
+func CreateNewFileWithContent(path string, content string) error {
 	newFile, err := os.Create(path)
 
 	_, err = newFile.WriteString(content)
@@ -95,4 +95,10 @@ func BlackListedFile(file string) bool {
 		}
 	}
 	return false
+}
+
+func GetFileHash(path string) string {
+	hash, _ := imohash.SumFile(path)
+	hashString := hex.EncodeToString(hash[:])
+	return hashString
 }

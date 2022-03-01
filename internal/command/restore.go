@@ -1,27 +1,25 @@
 package command
 
 import (
-	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/kalafut/imohash"
-	"github.com/looCiprian/diff-backup/internal/config"
-	"github.com/looCiprian/diff-backup/internal/db_mng"
-	"github.com/looCiprian/diff-backup/internal/file_mng"
-	"github.com/looCiprian/diff-backup/internal/time_mng"
 	"os"
 	"path/filepath"
+
+	"github.com/looCiprian/diff-backup/internal/config"
+	"github.com/looCiprian/diff-backup/internal/file_mng"
+	"github.com/looCiprian/diff-backup/internal/time_mng"
 )
 
 type restoreCommand struct {
 	destination string
 	source      string
-	date		string
+	date        string
 }
 
 var restoreCommandConfiguration restoreCommand
 
-func SetRestoreConfig(source string, destination string, date string)  {
+func SetRestoreConfig(source string, destination string, date string) {
 	restoreCommandConfiguration.source = source
 	restoreCommandConfiguration.destination = destination
 	restoreCommandConfiguration.date = date
@@ -29,45 +27,31 @@ func SetRestoreConfig(source string, destination string, date string)  {
 
 func ExecuteRestore() error {
 
-	config.LoadConfiguration()
+	config.LoadConfiguration(restoreCommandConfiguration.source)
 
-	destination := file_mng.AddSlashIfNotPresent(restoreCommandConfiguration.destination)
-	source := file_mng.AddSlashIfNotPresent(restoreCommandConfiguration.source)
-	dateFromRestore := restoreCommandConfiguration.date
-	databasePath := file_mng.AddSlashIfNotPresent(source) + "index.db"
+	destination := file_mng.AddSlashIfNotPresent(restoreCommandConfiguration.destination) // /destination/
+	source := file_mng.AddSlashIfNotPresent(restoreCommandConfiguration.source)           // /source/
+	dateFromRestore := restoreCommandConfiguration.date                                   // YYYY-MM-DD
 
-	if !file_mng.IsEmptyDirectory(destination){
+	if !file_mng.IsEmptyDirectory(destination) {
 		return errors.New("Restore directory (" + destination + ") not empty ")
 	}
 
-	if !file_mng.FileExists(databasePath) {
-		return errors.New("Backup Directory not initialized. Use init option ")
-	}
-
-	db_mng.OpenDB(databasePath)
-
 	// Check if restore date exists
-	if _, err := db_mng.IsRestoreDateExist(dateFromRestore); err!=nil{
+	if !isRestoreDateExist(source + dateFromRestore) {
 		return errors.New("No Date " + dateFromRestore + " to restore")
 	}
 
-	if err := createRestoreTable(dateFromRestore); err !=nil{
-		return err
-	}
+	dates := GetResorableDates()
 
-	dates, err := db_mng.GetAvailableRestoreDates()
-	if err != nil{
-		return err
-	}
-
-	// Get datas from selected to the oldest
+	// Get datas from the oldest date to the restore date
 	datesToRestore, err := getDateRangeToRestore(dates, dateFromRestore)
 	if err != nil {
 		return err
 	}
 
-	// For each date
-	for i:= len(datesToRestore)-1; i>=0; i-- {
+	// For each date starting from the newest to the oldest
+	for i := len(datesToRestore) - 1; i >= 0; i-- {
 		pathSource := source + file_mng.AddSlashIfNotPresent(datesToRestore[i])
 		// Iterate the backup date directory
 		filepath.Walk(pathSource, func(path string, info os.FileInfo, err error) error {
@@ -76,14 +60,11 @@ func ExecuteRestore() error {
 			}
 			if !info.IsDir() {
 				filePathSource := path
-				hash, _ := imohash.SumFile(filePathSource)
-				hashString := hex.EncodeToString(hash[:])
 				relativeFilePath := filePathSource[len(pathSource):]
 				// Check if already restore (only relative file path to maintain only the last file version)
-				alreadyRestored, err := db_mng.IsFileAlreadyRestored(relativeFilePath)
-				if err != nil {
-					return err
-				}
+				destinationPath := destination + relativeFilePath
+				alreadyRestored := isFileAlreadyRestored(destinationPath)
+
 				if !alreadyRestored {
 					destinationPath := destination + relativeFilePath
 					if err != nil {
@@ -94,11 +75,7 @@ func ExecuteRestore() error {
 					if err != nil {
 						return err
 					}
-					// Save restored file to temp restore table
-					if _, err:= db_mng.AddRestoredFile(databasePath, info.Name(), relativeFilePath, hashString, "", info.Size()); err!=nil{
-						return err
-					}
-				}else {
+				} else {
 					fmt.Println("Skipping: " + info.Name() + " already restored")
 				}
 			}
@@ -106,32 +83,7 @@ func ExecuteRestore() error {
 			return nil
 		})
 	}
-
-	if err := db_mng.DropRestoreTable();err!=nil{
-		return err
-	}
-
 	return nil
-}
-
-func createRestoreTable(date string) error {
-	if _, err := db_mng.CreateTempTable(); err !=nil{
-		return errors.New("No Date " + date + " to restore")
-	}
-	return nil
-}
-
-func GetResorableDates() ([]string, error) {
-	err := db_mng.OpenDB(file_mng.AddSlashIfNotPresent(restoreCommandConfiguration.source) + "index.db")
-
-	var dates []string
-
-	if err == nil{
-		dates, _ = db_mng.GetAvailableRestoreDates()
-		db_mng.CloseDB()
-	}
-
-	return dates, err
 }
 
 func getDateRangeToRestore(dates []string, startDate string) ([]string, error) {
@@ -143,15 +95,40 @@ func getDateRangeToRestore(dates []string, startDate string) ([]string, error) {
 
 	var dateToRestore []string
 
-	for _,date := range sortedDates{
-		if date != startDate{
+	for _, date := range sortedDates {
+		if date != startDate {
 			dateToRestore = append(dateToRestore, date)
 		}
-		if date == startDate{
+		if date == startDate {
 			dateToRestore = append(dateToRestore, date)
 			break
 		}
 	}
 
 	return dateToRestore, nil
+}
+
+func GetResorableDates() []string {
+
+	source := restoreCommandConfiguration.source
+
+	files := file_mng.DirectoriesInPath(source)
+
+	var dates []string
+
+	for _, file := range files {
+		if file.IsDir() {
+			dates = append(dates, file.Name())
+		}
+	}
+
+	return dates
+}
+
+func isRestoreDateExist(date string) bool {
+	return file_mng.FileExists(date)
+}
+
+func isFileAlreadyRestored(filePath string) bool {
+	return file_mng.FileExists(filePath)
 }

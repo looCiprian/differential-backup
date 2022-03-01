@@ -2,26 +2,26 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/spf13/cobra"
 )
 
 var (
-
 	rootCmd = &cobra.Command{
 		Use:   "diff-backup",
 		Short: "diff-backup is a backup tool that perform incremental backup for a specific directory",
-		Long: `diff-backup is a backup tool that perform incremental backup for a specific directory`,
+		Long:  `diff-backup is a backup tool that perform incremental backup for a specific directory`,
 	}
 )
 
-func init()  {
+func init() {
 
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 
 	rootCmd.AddCommand(versionCmd)
 
 	rootCmd.AddCommand(initCmd)
-	initCmd.Flags().StringVarP(&initSource, "source", "s","","Init directory")
+	initCmd.Flags().StringVarP(&initSource, "source", "s", "", "Init directory")
 	initCmd.MarkFlagRequired("source")
 
 	rootCmd.AddCommand(backupCmd)
