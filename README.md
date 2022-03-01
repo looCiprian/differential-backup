@@ -1,10 +1,13 @@
 # Differential backup
 This script allows to back up files by "differential backup" mode (Only files that have a different hash and path will be backed up in a new "snapshot")
 
-## How it works
+## How it works - V3.0
+The script will perform a backup by creating a new directory based on the current day and by copying only the new or changed files in the destination folder. Restore functionality will restore all contents from the chosen date to the oldest by keeping the newest files
+
+## How it works - V2.0
 The script will create an index database to trace which files have been already backed up and when performing a backup will create a new directory based on the current day and will copy only the new or changed files
 
-### Example
+### Example - V2.0
 #### Init
 ```
 test
@@ -103,7 +106,7 @@ restore
     ├── 3.txt --> content "new content"
     └── 4.txt
 ```
-## How to use - V2.0
+## How to use - V2.0/V3.0
 ```
 diff-backup is a backup tool that perform incremental backup for a specific directory
 
