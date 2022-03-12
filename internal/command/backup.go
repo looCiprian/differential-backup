@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/looCiprian/diff-backup/internal/config"
 	"github.com/looCiprian/diff-backup/internal/file_mng"
@@ -13,6 +14,13 @@ import (
 type backupCommand struct {
 	destination string
 	source      string
+}
+
+type workers struct {
+	maxWorkers     int
+	currentWorkers int
+	wg             sync.WaitGroup
+	mu             sync.Mutex
 }
 
 var backupCommandConfiguration backupCommand
@@ -40,34 +48,76 @@ func ExecuteBackup() error {
 		fmt.Println("Created a new backup dir: " + destination)
 	}
 
+	// Create a new workers pool
+	worker := workers{
+		maxWorkers:     5,
+		currentWorkers: 0,
+		wg:             sync.WaitGroup{},
+		mu:             sync.Mutex{},
+	}
+
 	filepath.Walk(source, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 		if !info.IsDir() {
-			fullSourcePath := path // /tmp/source/1/1.txt
-			fileName := filepath.Base(fullSourcePath)
-			relativePath := fullSourcePath[len(source)+1:] // 1/1.txt
-			hashString := file_mng.GetFileHash(fullSourcePath)
-			fileExists, date := isFileAlreadyBackup(destinationRoot, relativePath, hashString)
+			// Check if there are available workers
+			worker.mu.Lock()
+			available := availableWorkers(&worker)
+			worker.mu.Unlock()
 
-			// No error no file present in backup
-			if !fileExists && !file_mng.BlackListedFile(fileName) {
-
-				fmt.Println("Coping file: " + info.Name())
-				_, err := file_mng.CopyFile(fullSourcePath, info.Size(), destination+relativePath)
-				if err != nil {
-					fmt.Println("Error copying file: " + info.Name())
+			if !available {
+				for {
+					if availableWorkers(&worker) {
+						break
+					}
 				}
-			} else if fileExists { // No error but file already exists
-
-				fmt.Println("File " + info.Name() + " already present in " + destinationRoot + date + relativePath)
 			}
+
+			// Add a new worker
+			worker.mu.Lock()
+			worker.currentWorkers++
+			worker.mu.Unlock()
+			worker.wg.Add(1)
+
+			go walkCopy(info, path, source, destination, destinationRoot, &worker)
 		}
+
 		return nil
 	})
+	worker.wg.Wait()
 	fmt.Println("Backup Done! ")
 	return nil
+}
+
+func walkCopy(info os.FileInfo, path string, source string, destination string, destinationRoot string, worker *workers) {
+
+	defer worker.wg.Done()
+
+	fullSourcePath := path // /tmp/source/1/1.txt
+	fileName := filepath.Base(fullSourcePath)
+	relativePath := fullSourcePath[len(source)+1:] // 1/1.txt
+	hashString := file_mng.GetFileHash(fullSourcePath)
+	fileExists, date := isFileAlreadyBackup(destinationRoot, relativePath, hashString)
+
+	// No error no file present in backup
+	if !fileExists && !file_mng.BlackListedFile(fileName) {
+
+		fmt.Println("Coping file: " + info.Name())
+		_, err := file_mng.CopyFile(fullSourcePath, info.Size(), destination+relativePath)
+		if err != nil {
+			fmt.Println("Error copying file: " + info.Name())
+		}
+	} else if fileExists { // No error but file already exists
+
+		fmt.Println("File " + info.Name() + " already present in " + destinationRoot + date + relativePath)
+	}
+
+	// Decrease the number of workers
+	worker.mu.Lock()
+	worker.currentWorkers--
+	worker.mu.Unlock()
+
 }
 
 func isFileAlreadyBackup(backupPath string, relativePath string, hash string) (bool, string) {
@@ -86,4 +136,8 @@ func isFileAlreadyBackup(backupPath string, relativePath string, hash string) (b
 	}
 
 	return false, ""
+}
+
+func availableWorkers(w *workers) bool {
+	return w.currentWorkers < w.maxWorkers
 }
