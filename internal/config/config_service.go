@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 
@@ -10,7 +9,7 @@ import (
 
 var configuration Configuration
 
-const ConfigurationFile = "/.diff-backup-config.yaml"
+const ConfigurationFile = ".diff-backup-config.yaml"
 
 type Configuration struct {
 	Files struct {
@@ -23,7 +22,7 @@ func LoadConfiguration(destination string) {
 	configPath := destination + ConfigurationFile
 	config, err := ioutil.ReadFile(configPath) // just pass the file name
 	if err != nil {
-		fmt.Print(err)
+		log.Fatalf("error: %v - Use the init option before performing a backup 'init -s <destination directory>'", err)
 	}
 
 	err = yaml.Unmarshal(config, &configuration)

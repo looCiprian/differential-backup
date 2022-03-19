@@ -27,11 +27,10 @@ func SetRestoreConfig(source string, destination string, date string) {
 
 func ExecuteRestore() error {
 
-	config.LoadConfiguration(restoreCommandConfiguration.source)
-
 	destination := file_mng.AddSlashIfNotPresent(restoreCommandConfiguration.destination) // /destination/
 	source := file_mng.AddSlashIfNotPresent(restoreCommandConfiguration.source)           // /source/
-	dateFromRestore := restoreCommandConfiguration.date                                   // YYYY-MM-DD
+	config.LoadConfiguration(source)
+	dateFromRestore := restoreCommandConfiguration.date // YYYY-MM-DD
 
 	if !file_mng.IsEmptyDirectory(destination) {
 		return errors.New("Restore directory (" + destination + ") not empty ")
