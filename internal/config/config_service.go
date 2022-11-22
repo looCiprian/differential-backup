@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 
@@ -23,7 +22,7 @@ func LoadConfiguration(destination string) {
 	configPath := destination + ConfigurationFile
 	config, err := ioutil.ReadFile(configPath) // just pass the file name
 	if err != nil {
-		fmt.Print(err)
+		log.Fatal("Cannot read configuration file, use the init command before performing the backup")
 	}
 
 	err = yaml.Unmarshal(config, &configuration)

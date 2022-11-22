@@ -70,8 +70,7 @@ func ExecuteRestore() error {
 					if err != nil {
 						return err
 					}
-					fmt.Println("Restoring: " + info.Name())
-					_, err = file_mng.CopyFile(filePathSource, info.Size(), destinationPath)
+					_, err = file_mng.CopyFile(filePathSource, info.Size(), destinationPath, "Restoring: "+info.Name())
 					if err != nil {
 						return err
 					}
