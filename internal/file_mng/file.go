@@ -39,9 +39,9 @@ func CreateConfigFile(destination string) error {
 	return nil
 }
 
-//copyFile
+// copyFile
 // Copy file from source to destination
-func CopyFile(source string, size int64, destination string) (int64, error) {
+func CopyFile(source string, size int64, destination string, msg string) (int64, error) {
 
 	sourceFile, err := os.Open(source)
 	if err != nil {
@@ -60,7 +60,7 @@ func CopyFile(source string, size int64, destination string) (int64, error) {
 		return 0, err
 	}
 
-	bar := progressbar.DefaultBytes(size, "Progress")
+	bar := progressbar.DefaultBytes(size, msg)
 
 	bytesCopied, err := io.Copy(io.MultiWriter(newFile, bar), sourceFile)
 	sourceFile.Close()
