@@ -18,7 +18,7 @@ func SetInitConfig(destination string) {
 	initCommandConfiguration.destination = destination
 }
 
-//executeInit
+// executeInit
 // Execute directory initialization
 func ExecuteInit() error {
 	destination := file_mng.AddSlashIfNotPresent(initCommandConfiguration.destination)
@@ -37,7 +37,7 @@ func ExecuteInit() error {
 
 	configPath := destination + config.ConfigurationFile
 	if !file_mng.FileExists(configPath) {
-		file_mng.CreateConfigFile(configPath)
+		config.CreateConfigFile(configPath)
 	}
 
 	fmt.Println("Backup correctly initialized ")

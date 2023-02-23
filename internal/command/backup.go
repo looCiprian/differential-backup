@@ -1,6 +1,7 @@
 package command
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -27,7 +28,12 @@ func ExecuteBackup() error {
 
 	destination := backupCommandConfiguration.destination    // /tmp/backup
 	destination = file_mng.AddSlashIfNotPresent(destination) // /tmp/backup/
-	config.LoadConfiguration(destination)
+	configPath := destination + config.ConfigurationFile
+	if !file_mng.FileExists(configPath) {
+		return errors.New("Use the init option before performing a backup 'init -s <destination directory>'")
+	}
+
+	config.LoadConfiguration(configPath)
 
 	destinationRoot := destination
 	source := backupCommandConfiguration.source // /tmp/source
